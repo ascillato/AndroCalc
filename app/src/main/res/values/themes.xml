@@ -12,4 +12,24 @@
         <item name="android:textSize">28sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="CalcNumberButton" parent="CalcButton">
+        <item name="android:backgroundTint">@color/calc_number_button</item>
+        <item name="android:textColor">@color/calc_light_text</item>
+    </style>
+
+    <style name="CalcClearButton" parent="CalcButton">
+        <item name="android:backgroundTint">@color/calc_clear_button</item>
+        <item name="android:textColor">@color/calc_light_text</item>
+    </style>
+
+    <style name="CalcEqualsButton" parent="CalcButton">
+        <item name="android:backgroundTint">@color/calc_equals_button</item>
+        <item name="android:textColor">@color/calc_light_text</item>
+    </style>
+
+    <style name="CalcOperatorButton" parent="CalcButton">
+        <item name="android:backgroundTint">@color/calc_operator_button</item>
+        <item name="android:textColor">@color/calc_dark_text</item>
+    </style>
 </resources>
