@@ -1,4 +1,4 @@
-name: Build and Release APK
+name: Build and Release Android artifacts
 
 on:
   push:
@@ -42,8 +42,8 @@ jobs:
             -validity 10000 \
             -dname "CN=AndroCalc Random Release,O=AndroCalc,C=US"
 
-      - name: Build release APK
-        run: gradle assembleRelease
+      - name: Build release APK and Android App Bundle
+        run: gradle assembleRelease bundleRelease
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
@@ -51,4 +51,6 @@ jobs:
           tag_name: main-${{ github.run_id }}
           name: Main build ${{ github.sha }}
           generate_release_notes: true
-          files: app/build/outputs/apk/release/app-release.apk
+          files: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/bundle/release/app-release.aab
