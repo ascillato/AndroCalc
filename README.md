@@ -64,12 +64,3 @@ app/build/outputs/apk/debug/app-debug.apk
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-
-## Notes about this repository state
-
-In this execution environment, external package downloads are blocked, so Gradle dependencies could not be resolved and APK generation could not be completed here.
-
-After running the build command on a normal Android development machine, commit the generated APK at:
-
-- `app/build/outputs/apk/debug/app-debug.apk`
-
