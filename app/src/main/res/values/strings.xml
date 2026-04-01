@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AndroCalc</string>
+    <string name="error_text">error</string>
+</resources>
