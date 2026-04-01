@@ -6,6 +6,27 @@
     android:padding="16dp"
     android:background="@android:color/white">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/btnLanguageEs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="ES" />
+
+        <Button
+            android:id="@+id/btnLanguageEn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EN" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tvExpression"
         android:layout_width="match_parent"
