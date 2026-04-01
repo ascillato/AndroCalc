@@ -17,10 +17,36 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    def releaseKeystorePath = System.getenv("RELEASE_KEYSTORE_PATH") ?: "signing/release-random.jks"
+    def releaseStorePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: "r4nd0mStoreP@ss_9x2k"
+    def releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "randomReleaseKey"
+    def releaseKeyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: releaseStorePassword
+
+    signingConfigs {
+        debug {
+            // Explicitly use Android's standard debug keystore so debug artifacts are always signed.
+            storeFile file(System.properties['user.home'] + "/.android/debug.keystore")
+            storePassword "android"
+            keyAlias "AndroidDebugKey"
+            keyPassword "android"
+        }
+        release {
+            // Random key generated at build time (e.g. CI) or provided via env vars.
+            storeFile file(releaseKeystorePath)
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

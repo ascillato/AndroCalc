@@ -47,7 +47,7 @@ It is designed for **phone-only**, **portrait-only** use with a simple full-scre
 - Android SDK for API 34
 - A TTS engine available on the device/emulator
 
-### Build APK (local machine)
+### Build signed debug APK (local machine)
 
 ```bash
 ./gradlew assembleDebug
@@ -57,6 +57,41 @@ Expected output:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
+```
+
+`app-debug.apk` is signed with the standard Android debug key.
+
+### Build signed release APK (random key generated locally)
+
+Generate a random keystore:
+
+```bash
+mkdir -p app/signing && keytool -genkeypair -v \
+  -keystore app/signing/release-random.jks \
+  -storepass "r4nd0mStoreP@ss_9x2k" \
+  -alias "randomReleaseKey" \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000 \
+  -dname "CN=AndroCalc Random Release,O=AndroCalc,C=US"
+```
+
+Then build:
+
+```bash
+./gradlew assembleRelease
+```
+
+Expected output:
+
+```text
+app/build/outputs/apk/release/app-release.apk
+```
+
+`app-release.apk` is signed using the generated key stored at:
+
+```text
+app/signing/release-random.jks
 ```
 
 ### Install APK

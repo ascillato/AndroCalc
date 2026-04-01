@@ -30,6 +30,18 @@ jobs:
         with:
           gradle-version: 8.7
 
+      - name: Generate random release keystore
+        run: |
+          mkdir -p app/signing
+          keytool -genkeypair -v \
+            -keystore app/signing/release-random.jks \
+            -storepass "r4nd0mStoreP@ss_9x2k" \
+            -alias "randomReleaseKey" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=AndroCalc Random Release,O=AndroCalc,C=US"
+
       - name: Build release APK
         run: gradle assembleRelease
 
@@ -39,4 +51,4 @@ jobs:
           tag_name: main-${{ github.run_id }}
           name: Main build ${{ github.sha }}
           generate_release_notes: true
-          files: app/build/outputs/apk/release/app-release-unsigned.apk
+          files: app/build/outputs/apk/release/app-release.apk
