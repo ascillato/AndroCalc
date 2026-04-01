@@ -5,14 +5,20 @@ import android.speech.tts.TextToSpeech
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.androcalc.databinding.ActivityMainBinding
-import kotlin.math.abs
 import java.util.Locale
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+
+    private enum class SpokenLanguage(val locale: Locale) {
+        SPANISH(Locale("es", "ES")),
+        ENGLISH(Locale.US)
+    }
 
     private lateinit var binding: ActivityMainBinding
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    private var spokenLanguage = SpokenLanguage.SPANISH
 
     private var firstOperand: Int? = null
     private var secondOperand: String = ""
@@ -29,6 +35,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         setupNumberButtons()
         setupActionButtons()
+        setupLanguageButtons()
+        updateLanguageButtons()
         updateDisplay()
     }
 
@@ -61,6 +69,26 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         binding.btnEquals.setOnClickListener { handleEquals() }
         binding.btnClear.setOnClickListener { clearAll() }
+    }
+
+    private fun setupLanguageButtons() {
+        binding.btnLanguageEs.setOnClickListener { setSpokenLanguage(SpokenLanguage.SPANISH) }
+        binding.btnLanguageEn.setOnClickListener { setSpokenLanguage(SpokenLanguage.ENGLISH) }
+    }
+
+    private fun setSpokenLanguage(language: SpokenLanguage) {
+        if (spokenLanguage == language) {
+            return
+        }
+
+        spokenLanguage = language
+        applyTtsLanguage()
+        updateLanguageButtons()
+    }
+
+    private fun updateLanguageButtons() {
+        binding.btnLanguageEs.isEnabled = spokenLanguage != SpokenLanguage.SPANISH
+        binding.btnLanguageEn.isEnabled = spokenLanguage != SpokenLanguage.ENGLISH
     }
 
     private fun handleNumberInput(digit: String) {
@@ -110,7 +138,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             return
         }
 
-        val sentence = "${numberToWords(first)} ${operatorWord(op)} ${numberToWords(second)} equals ${numberToWords(result)}"
+        val sentence = "${numberToWords(first)} ${operatorWord(op)} ${numberToWords(second)} ${equalsWord()} ${numberToWords(result)}"
         speak(sentence)
 
         currentInput = result.toString()
@@ -144,7 +172,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         showingResult = false
         updateDisplay()
         if (speak) {
-            speak("clear")
+            speak(clearWord())
         }
     }
 
@@ -170,16 +198,47 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun operatorWord(op: Char): String {
-        return when (op) {
-            '+' -> "plus"
-            '-' -> "minus"
-            '*' -> "times"
-            '/' -> "divided by"
-            else -> ""
+        return when (spokenLanguage) {
+            SpokenLanguage.ENGLISH -> when (op) {
+                '+' -> "plus"
+                '-' -> "minus"
+                '*' -> "times"
+                '/' -> "divided by"
+                else -> ""
+            }
+
+            SpokenLanguage.SPANISH -> when (op) {
+                '+' -> "más"
+                '-' -> "menos"
+                '*' -> "por"
+                '/' -> "dividido por"
+                else -> ""
+            }
+        }
+    }
+
+    private fun equalsWord(): String {
+        return when (spokenLanguage) {
+            SpokenLanguage.ENGLISH -> "equals"
+            SpokenLanguage.SPANISH -> "es igual a"
+        }
+    }
+
+    private fun clearWord(): String {
+        return when (spokenLanguage) {
+            SpokenLanguage.ENGLISH -> "clear"
+            SpokenLanguage.SPANISH -> "borrar"
         }
     }
 
     private fun numberToWords(number: Int): String {
+        return when (spokenLanguage) {
+            SpokenLanguage.ENGLISH -> numberToEnglishWords(number)
+            SpokenLanguage.SPANISH -> numberToSpanishWords(number)
+        }
+    }
+
+    private fun numberToEnglishWords(number: Int): String {
         if (number == 0) return "zero"
 
         val ones = arrayOf(
@@ -209,6 +268,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         parts += ones[remainder % 10]
                     }
                 }
+
                 remainder > 0 -> parts += ones[remainder]
             }
 
@@ -231,11 +291,94 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         return sign + words.joinToString(" ")
     }
 
+    private fun numberToSpanishWords(number: Int): String {
+        if (number == 0) return "cero"
+
+        fun underHundred(value: Int): String {
+            return when (value) {
+                0 -> ""
+                1 -> "uno"
+                2 -> "dos"
+                3 -> "tres"
+                4 -> "cuatro"
+                5 -> "cinco"
+                6 -> "seis"
+                7 -> "siete"
+                8 -> "ocho"
+                9 -> "nueve"
+                10 -> "diez"
+                11 -> "once"
+                12 -> "doce"
+                13 -> "trece"
+                14 -> "catorce"
+                15 -> "quince"
+                16 -> "dieciséis"
+                17 -> "diecisiete"
+                18 -> "dieciocho"
+                19 -> "diecinueve"
+                20 -> "veinte"
+                in 21..29 -> "veinti${underHundred(value - 20)}"
+                30 -> "treinta"
+                40 -> "cuarenta"
+                50 -> "cincuenta"
+                60 -> "sesenta"
+                70 -> "setenta"
+                80 -> "ochenta"
+                90 -> "noventa"
+                else -> {
+                    val tens = (value / 10) * 10
+                    val units = value % 10
+                    "${underHundred(tens)} y ${underHundred(units)}"
+                }
+            }
+        }
+
+        fun underThousand(value: Int): String {
+            if (value < 100) return underHundred(value)
+
+            val hundreds = value / 100
+            val remainder = value % 100
+            val hundredWord = when (hundreds) {
+                1 -> if (remainder == 0) "cien" else "ciento"
+                2 -> "doscientos"
+                3 -> "trescientos"
+                4 -> "cuatrocientos"
+                5 -> "quinientos"
+                6 -> "seiscientos"
+                7 -> "setecientos"
+                8 -> "ochocientos"
+                9 -> "novecientos"
+                else -> ""
+            }
+
+            return if (remainder == 0) hundredWord else "$hundredWord ${underHundred(remainder)}"
+        }
+
+        val sign = if (number < 0) "menos " else ""
+        val absolute = abs(number)
+        val thousands = absolute / 1000
+        val remainder = absolute % 1000
+
+        val parts = mutableListOf<String>()
+        if (thousands > 0) {
+            parts += if (thousands == 1) "mil" else "${underThousand(thousands)} mil"
+        }
+        if (remainder > 0) {
+            parts += underThousand(remainder)
+        }
+
+        return sign + parts.joinToString(" ")
+    }
+
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            val result = tts?.setLanguage(Locale.US)
-            ttsReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
+            applyTtsLanguage()
         }
+    }
+
+    private fun applyTtsLanguage() {
+        val result = tts?.setLanguage(spokenLanguage.locale)
+        ttsReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
     }
 
     private fun speak(text: String) {
