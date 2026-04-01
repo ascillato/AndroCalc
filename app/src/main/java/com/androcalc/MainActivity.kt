@@ -1,11 +1,11 @@
 package com.androcalc
 
-import android.icu.text.RuleBasedNumberFormat
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.androcalc.databinding.ActivityMainBinding
+import kotlin.math.abs
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
@@ -180,8 +180,55 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun numberToWords(number: Int): String {
-        val formatter = RuleBasedNumberFormat(Locale.US, RuleBasedNumberFormat.SPELLOUT)
-        return formatter.format(number.toLong())
+        if (number == 0) return "zero"
+
+        val ones = arrayOf(
+            "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
+        )
+        val teens = arrayOf(
+            "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
+        )
+        val tens = arrayOf(
+            "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
+        )
+
+        fun threeDigitsToWords(value: Int): String {
+            val hundreds = value / 100
+            val remainder = value % 100
+            val parts = mutableListOf<String>()
+
+            if (hundreds > 0) {
+                parts += "${ones[hundreds]} hundred"
+            }
+
+            when {
+                remainder in 10..19 -> parts += teens[remainder - 10]
+                remainder >= 20 -> {
+                    parts += tens[remainder / 10]
+                    if (remainder % 10 != 0) {
+                        parts += ones[remainder % 10]
+                    }
+                }
+                remainder > 0 -> parts += ones[remainder]
+            }
+
+            return parts.joinToString(" ")
+        }
+
+        val sign = if (number < 0) "minus " else ""
+        val absolute = abs(number)
+        val thousands = absolute / 1000
+        val remainder = absolute % 1000
+
+        val words = mutableListOf<String>()
+        if (thousands > 0) {
+            words += "${threeDigitsToWords(thousands)} thousand"
+        }
+        if (remainder > 0) {
+            words += threeDigitsToWords(remainder)
+        }
+
+        return sign + words.joinToString(" ")
     }
 
     override fun onInit(status: Int) {
